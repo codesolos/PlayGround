@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#101624" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 rx=%2212%22 fill=%22%23c9ff70%22/><circle cx=%2220%22 cy=%2220%22 r=%227%22 fill=%22%23101624%22/></svg>" />
+  <title>Dot Dash</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
+      --ink: #f5f7ff;
+      --muted: #9da8c0;
+      --lime: #c9ff70;
+      --panel: #171f31;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: var(--ink);
+      background: radial-gradient(ellipse at 50% 0%, #25304a 0%, #101624 58%);
+    }
+    button { font: inherit; }
+    .game { width: min(100%, 680px); }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 14px; color: #17200e; background: var(--lime); font-size: 23px; font-weight: 900; box-shadow: 0 5px 22px #c9ff7030; }
+    h1 { margin: 0; font-size: 21px; letter-spacing: -.04em; }
+    .tagline { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    .best { color: var(--muted); font-size: 12px; text-align: right; }
+    .best strong { display: block; margin-top: 2px; color: var(--ink); font-size: 17px; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .stat { padding: 13px 17px; border: 1px solid #ffffff0b; border-radius: 16px; background: #171f31cc; }
+    .stat-label { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .stat-value { display: block; margin-top: 3px; font-variant-numeric: tabular-nums; font-size: 25px; font-weight: 800; letter-spacing: -.04em; }
+    .stat-value.time-low { color: #ff887b; }
+    .arena {
+      position: relative;
+      height: min(58vh, 390px);
+      min-height: 280px;
+      overflow: hidden;
+      isolation: isolate;
+      border: 1px solid #ffffff12;
+      border-radius: 24px;
+      background-color: #141c2c;
+      background-image: radial-gradient(#ffffff12 1px, transparent 1.5px);
+      background-size: 22px 22px;
+      box-shadow: 0 24px 70px #0005, inset 0 1px #ffffff08;
+      touch-action: manipulation;
+    }
+    .arena::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse at center, transparent 15%, #10162488 100%); pointer-events: none; }
+    .target {
+      position: absolute;
+      width: 58px;
+      height: 58px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      cursor: pointer;
+      background: var(--lime);
+      box-shadow: 0 0 0 8px #c9ff7023, 0 0 32px #c9ff7070, inset 0 -5px 0 #92c941;
+      transform: translate(-50%, -50%) scale(1);
+      transition: left 130ms ease-out, top 130ms ease-out, transform 100ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .target::after { content: ""; position: absolute; inset: 19px; border-radius: 50%; background: #f8ffe9; }
+    .target:hover { transform: translate(-50%, -50%) scale(1.09); }
+    .target:active { transform: translate(-50%, -50%) scale(.88); }
+    .target:focus-visible { outline: 3px solid white; outline-offset: 9px; }
+    .target[hidden] { display: none; }
+    .overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; background: #10162449; }
+    .overlay[hidden] { display: none; }
+    .card { max-width: 330px; padding: 25px 28px 27px; border: 1px solid #ffffff17; border-radius: 22px; background: #171f31ed; box-shadow: 0 14px 40px #0004; backdrop-filter: blur(12px); }
+    .eyebrow { margin: 0 0 9px; color: var(--lime); font-size: 11px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .card h2 { margin: 0; font-size: 25px; letter-spacing: -.05em; }
+    .card p:not(.eyebrow) { margin: 9px 0 20px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .play-button { min-width: 156px; padding: 12px 20px; border: 0; border-radius: 12px; color: #17200e; background: var(--lime); font-weight: 850; cursor: pointer; box-shadow: 0 5px 18px #c9ff7030; transition: transform .12s, filter .12s; }
+    .play-button:hover { filter: brightness(1.08); transform: translateY(-2px); }
+    .play-button:active { transform: translateY(0); }
+    .help { margin: 14px 0 0; color: #818da6; text-align: center; font-size: 12px; }
+    @media (max-width: 480px) {
+      body { padding: 18px 15px; }
+      .arena { height: min(55vh, 400px); min-height: 270px; border-radius: 20px; }
+      .stat { padding: 11px 14px; }
+      .target { width: 56px; height: 56px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="game" aria-label="Dot Dash game">
+    <header>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">●</div>
+        <div><h1>Dot Dash</h1><p class="tagline">A tiny test of your reflexes</p></div>
+      </div>
+      <div class="best">PERSONAL BEST<strong id="best">0</strong></div>
+    </header>
+    <section class="stats" aria-label="Game statistics">
+      <div class="stat"><span class="stat-label">Score</span><strong class="stat-value" id="score">0</strong></div>
+      <div class="stat"><span class="stat-label">Time</span><strong class="stat-value" id="time">30</strong></div>
+    </section>
+    <section class="arena" id="arena" aria-label="Game area">
+      <button class="target" id="target" type="button" aria-label="Dot target" hidden></button>
+      <div class="overlay" id="overlay">
+        <div class="card">
+          <p class="eyebrow" id="eyebrow">Ready?</p>
+          <h2 id="headline">Tap the dot.</h2>
+          <p id="message">Catch as many as you can before the 30 seconds run out.</p>
+          <button class="play-button" id="play" type="button">Start game</button>
+        </div>
+      </div>
+    </section>
+    <p class="help">Tap or click the bright dot · You have 30 seconds</p>
+  </main>
+  <script>
+    (() => {
+      const arena = document.querySelector('#arena');
+      const target = document.querySelector('#target');
+      const overlay = document.querySelector('#overlay');
+      const play = document.querySelector('#play');
+      const scoreDisplay = document.querySelector('#score');
+      const timeDisplay = document.querySelector('#time');
+      const bestDisplay = document.querySelector('#best');
+      const eyebrow = document.querySelector('#eyebrow');
+      const headline = document.querySelector('#headline');
+      const message = document.querySelector('#message');
+      let score = 0;
+      let timeLeft = 30;
+      let interval = null;
+      let active = false;
+      let best = 0;
+      try { best = Number(localStorage.getItem('dot-dash-best')) || 0; } catch (_) {}
+      bestDisplay.textContent = best;
+
+      function moveTarget() {
+        const bounds = arena.getBoundingClientRect();
+        const margin = 44;
+        const x = margin + Math.random() * Math.max(0, bounds.width - margin * 2);
+        const y = margin + Math.random() * Math.max(0, bounds.height - margin * 2);
+        target.style.left = `${x}px`;
+        target.style.top = `${y}px`;
+      }
+      function finish() {
+        active = false;
+        clearInterval(interval);
+        target.hidden = true;
+        eyebrow.textContent = 'Time’s up';
+        headline.textContent = `You got ${score}!`;
+        message.textContent = score > best ? 'A new personal best. Nice reflexes!' : 'Want another go? You can beat that.';
+        play.textContent = 'Play again';
+        overlay.hidden = false;
+      }
+      function start() {
+        score = 0;
+        timeLeft = 30;
+        active = true;
+        scoreDisplay.textContent = score;
+        timeDisplay.textContent = timeLeft;
+        timeDisplay.classList.remove('time-low');
+        overlay.hidden = true;
+        target.hidden = false;
+        moveTarget();
+        clearInterval(interval);
+        interval = setInterval(() => {
+          timeLeft -= 1;
+          timeDisplay.textContent = timeLeft;
+          if (timeLeft <= 5) timeDisplay.classList.add('time-low');
+          if (timeLeft <= 0) finish();
+        }, 1000);
+      }
+      target.addEventListener('click', () => {
+        if (!active) return;
+        score += 1;
+        scoreDisplay.textContent = score;
+        if (score > best) {
+          best = score;
+          bestDisplay.textContent = best;
+          try { localStorage.setItem('dot-dash-best', String(best)); } catch (_) {}
+        }
+        moveTarget();
+      });
+      play.addEventListener('click', start);
+      window.addEventListener('resize', () => { if (active) moveTarget(); });
+    })();
+  </script>
+</body>
+</html>
